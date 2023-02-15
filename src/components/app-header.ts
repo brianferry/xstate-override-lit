@@ -1,7 +1,13 @@
 import { LitElement, css, html } from 'lit';
 import { property, customElement, query } from 'lit/decorators.js';
 import { interpret } from 'xstate';
-import { simpleMachine } from '../state/simpleMachine.js';
+import { inspect } from '@xstate/inspect';
+
+inspect({
+  iframe: false
+})
+
+import { simpleActions, simpleMachine } from '../state/simpleMachine.js';
 import './app-state.js';
 
 @customElement('app-header')
@@ -65,6 +71,7 @@ export class AppHeader extends LitElement {
     super();
     this._config = {
       actions: {
+        ...simpleActions,
         loadData: (context: any, data: any) => console.log(context, data),
       }
     };
@@ -84,7 +91,7 @@ export class AppHeader extends LitElement {
         {
           devTools: true
         }
-      ).start();
+      );
       this._appState.stateMachine = this._stateMachine;
     }
   }
@@ -97,19 +104,7 @@ export class AppHeader extends LitElement {
   async pressTheButton() {
     await this.updateComplete;
 
-    this._stateMachine = interpret(
-      simpleMachine
-        .withConfig(this._config)
-        .withContext({
-          "example": 'newest data'
-        } as any),
-      {
-        devTools: true
-      }
-    ).start();
-    this._appState.stateMachine = this._stateMachine;
-
-
+    this._stateMachine.send('PREVIEW', { "new": "data"} )
   }
 
   render() {

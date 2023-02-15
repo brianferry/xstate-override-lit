@@ -1,9 +1,4 @@
-import { createMachine } from 'xstate';
-import { inspect } from '@xstate/inspect';
-
-inspect({
-  iframe: false
-})
+import { assign, createMachine } from 'xstate';
 
 export const simpleContext = {
   data: {}
@@ -12,7 +7,13 @@ export const simpleContext = {
 export const simpleActions = {
   loadData: (context: any, _ev: any) => {
     context.data = { example: 'data' }
-  }
+  },
+  loadDataTwo: (context: any, _ev: any) => {
+    context.data = { example: 'dataaaaaaaa' }
+  },
+  loadPreviewData: assign({
+    context: (_ctx: any, evt) => evt,
+  })
 }
 
 
@@ -30,16 +31,28 @@ export const simpleMachine = createMachine(
       loading: {
         entry: ['loadData'],
         on: {
-          '': 'idle'
-        }
+          '': 'idle',
+        },
       },
       idle: {
         on: {
-          FINISH: 'finished'
+          ANOTHER: 'anotherOne',
+          PREVIEW: {
+            actions: ['loadPreviewData'],
+          }
+        }
+      },
+      anotherOne: {
+        entry: ['loadDataTwo'],
+        on: {
+          FINISH: 'finished',
+          PREVIEW: {
+            actions: ['loadPreviewData'],
+          }
         }
       },
       finished: {
-        type: 'final'
+        type: 'final',
       }
     }
   },

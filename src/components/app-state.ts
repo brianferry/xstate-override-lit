@@ -7,8 +7,12 @@ import { simpleMachine } from '../state/simpleMachine.js';
 @customElement('app-state')
 export class AppState extends LitElement {
   @property({
-    reflect: false,
+    reflect: true,
   }) stateMachine: any;
+
+  @property({
+    reflect: false
+  }) context: any;
 
   constructor() {
     super();
@@ -22,13 +26,28 @@ export class AppState extends LitElement {
         {
           devTools: true
         }
-      ).start();
+      );
     }
+    this.stateMachine.onTransition((state: any) => {
+      console.log('transition', state)
+      this.context = JSON.stringify(state.context);
+      console.log(this.context);
+    }).start();
+  }
+
+  getThatState() {
+    console.log(this.stateMachine);
+  }
+
+  attributeChangedCallback(name: string, _old: string | null, value: string | null): void {
+    console.log(name, _old, value);
+    this.updateStateMachine();
   }
 
   render() {
     return html`
-      <div>Context Data: ${JSON.stringify(this.stateMachine?.state?.context?.example)}</div>
+      <div>Context Data: ${this.context}</div>
+      <button @click=${this.getThatState}>clog state</button>
     `;
   }
 }
