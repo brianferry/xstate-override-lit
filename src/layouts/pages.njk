@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="modulepreload" href="/experimental-hydrate-support.js" />
+    <link rel="modulepreload" href="/app-index.js" />
+
+    <meta charset="utf-8" />
+    <title>elePWAnty</title>
+
+    <base href="/" />
+
+    <!-- Ensures the webpage's dimensions are responsive.-->
+    <meta
+      name="viewport"
+      content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0"
+    />
+    <meta name="description" content="Template for progressive web apps" />
+    <meta name="theme-color" content="#6E23E7" />
+
+    <!--
+      Apple-specific. Ensurer runnning in full-screen mode with a black status bar.
+      Learn more at https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariHTMLRef/Articles/MetaTags.html
+    -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="elePWAnty" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+    <!-- Icon representing document. Think favicon.ico. -->
+    <link
+      rel="icon"
+      href="assets/icons/Square44x44Logo.altform-lightunplated_targetsize-24.png"
+      type="image/x-icon"
+    />
+
+    <link rel="manifest" href="manifest.json" />
+
+    <!-- Stylesheets. -->
+    <link href="styles/global.css" rel="stylesheet" />
+
+    <!-- .js class is used for progressive enhancement -->
+    <script>
+      document.documentElement.classList.add('js');
+    </script>
+
+    <style></style>
+  </head>
+
+  <body dsd-pending>
+    {{content | safe}}
+
+    <script type="module">
+      (async function hydrateLit() {
+        // Start fetching the Lit hydration support module (note the absence
+        // of "await" -- we don't want to block yet).
+        const litHydrateSupportInstalled = import(
+          '/experimental-hydrate-support.js'
+        );
+
+        // Check if we require the declarative shadow DOM polyfill. As of
+        // February 2022, Chrome and Edge have native support, but Firefox
+        // and Safari don't yet.
+        if (!HTMLTemplateElement.prototype.hasOwnProperty('shadowRoot')) {
+          // Fetch the declarative shadow DOM polyfill.
+          const { hydrateShadowRoots } = await import(
+            '/template-shadowroot.js'
+          );
+
+          // Apply the polyfill. This is a one-shot operation, so it is important
+          // it happens after all HTML has been parsed.
+          hydrateShadowRoots(document.body);
+
+          // At this point, browsers without native declarative shadow DOM
+          // support can paint the initial state of your components!
+          document.body.removeAttribute('dsd-pending');
+        }
+
+        // The Lit hydration support module must be installed before we can
+        // load any component definitions. Wait until it's ready.
+        await litHydrateSupportInstalled;
+
+        // Load component definitions. As each component definition loads, your
+        // pre-rendered components will come to life and become interactive.
+        //
+        // You may also prefer to bundle your components into fewer JS modules.
+        // See https://lit.dev/docs/tools/production/#building-with-rollup for
+        // more details.
+        import('./app-index.js');
+      })();
+    </script>
+
+    <script>
+      navigator.serviceWorker.register('/service-worker.js');
+    </script>
+  </body>
+</html>
